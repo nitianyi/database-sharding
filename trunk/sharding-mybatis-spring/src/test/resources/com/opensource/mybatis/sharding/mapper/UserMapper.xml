@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.opensource.mybatis.sharding.mapper.UserMapper">
+ 
+ <insert id="insert" parameterType="user">
+    <![CDATA[
+    INSERT INTO user_copy (name,age)
+    VALUES(#{name},#{age})
+    ]]>
+    <selectKey resultType="long" keyProperty="id">
+            SELECT LAST_INSERT_ID() AS ID
+    </selectKey>
+  </insert>
+  <update id="update" parameterType="user">
+      <![CDATA[    
+      update  user_copy set name=#{name},age=#{age} where id=#{id} 
+      ]]>
+  </update> 
+  <sql id="user_copy_SELECT">
+      <![CDATA[
+        select * from user_copy
+      ]]>
+  </sql>
+  <select id="findById" resultType="user" parameterType="int">
+     <include refid="user_copy_SELECT"/>
+     <![CDATA[
+      where id=#{id}
+      ]]>
+  </select>
+   <select id="listByParam" resultType="user" parameterType="string">
+     <include refid="user_copy_SELECT"/>
+     <![CDATA[
+      where name=#{name}
+      ]]>
+  </select>
+  <!-- 
+  <select id="listByParam" resultType="user_copy" parameterType="activityQueryParam">
+     <include refid="user_copy_SELECT"/>
+     <include refid="SELECT_LIST_BY_PARAM_CONDITION"/>
+      limit #{offset},#{pageSize}
+  </select>
+    <select id="countByParam" resultType="int" parameterType="activityQueryParam">
+        SELECT
+        count(1)
+        FROM
+        LOTTERY_ACTIVITY t
+        <include refid="SELECT_LIST_BY_PARAM_CONDITION"/>
+    </select>
+   查询条件
+  <sql id="SELECT_LIST_BY_PARAM_CONDITION">
+      where 1=1
+      <if test="id!=null">
+           <![CDATA[
+           and id=#{id}
+           ]]>
+      </if> 
+      <if test="startTimeFrom!=null">
+           <![CDATA[
+           and first_begin_time>=#{startTimeFrom}
+           ]]>
+      </if>
+      <if test="startTimeTo!=null">
+           <![CDATA[
+           and first_begin_time<#{startTimeTo}
+           ]]>
+      </if>
+      <if test="endTimeFrom!=null">
+           <![CDATA[
+           and last_end_time>=#{endTimeFrom}
+           ]]>
+      </if>
+      <if test="endTimeTo!=null">
+           <![CDATA[
+           and last_end_time<#{endTimeTo}
+           ]]>
+      </if>
+      <if test="status!=null">
+           <![CDATA[
+           and status=#{status}
+           ]]>
+      </if>
+  </sql> -->
+</mapper>

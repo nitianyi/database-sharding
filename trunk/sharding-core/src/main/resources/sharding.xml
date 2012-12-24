@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configurations>
+	<datasource id="springconfig" ref="springdatasource-config" />
+	<generator id="customGenerator" class="com.test.CustomGenerator" />
+	<datasource id="parent" abstract="true">
+		<url>jdbc:mysql://localhost:3306/sharding?useUnicode=true&amp;characterEncoding=UTF-8&amp;zeroDateTimeBehavior=convertToNull
+		</url>
+		<username>root</username>
+		<password>root</password>
+		<minIdle>5</minIdle>
+		<maxIdle>5</maxIdle>
+		<initialSize>5</initialSize>
+		<maxWait>30000</maxWait>
+		<maxActive>128</maxActive>
+		<testOnBorrow>true</testOnBorrow>
+		<testWhileIdle>true</testWhileIdle>
+		<validationQuery>select 1</validationQuery>
+		<driverClassName>com.mysql.jdbc.Driver</driverClassName>
+	</datasource>
+	<datasource id="master1" parent="parent">
+		<url>jdbc:mysql://localhost:3306/sharding?useUnicode=true&amp;characterEncoding=UTF-8&amp;zeroDateTimeBehavior=convertToNull
+		</url>		 
+	</datasource>
+	<datasource id="slave1" parent="parent">
+		<url>jdbc:mysql://localhost:3306/sharding?useUnicode=true&amp;characterEncoding=UTF-8&amp;zeroDateTimeBehavior=convertToNull
+		</url> 
+	</datasource>
+	<datasource id="master2" parent="parent">
+		<url>jdbc:mysql://localhost:3306/sharding2?useUnicode=true&amp;characterEncoding=UTF-8&amp;zeroDateTimeBehavior=convertToNull
+		</url> 
+	</datasource>
+	<datasource id="slave2" parent="parent">
+		<url>jdbc:mysql://localhost:3306/sharding?useUnicode=true&amp;characterEncoding=UTF-8&amp;zeroDateTimeBehavior=convertToNull
+		</url> 
+	</datasource>
+	<datasource id="master3" parent="parent">
+		<url>jdbc:mysql://localhost:3306/sharding?useUnicode=true&amp;characterEncoding=UTF-8&amp;zeroDateTimeBehavior=convertToNull
+		</url> 
+	</datasource>
+	<datasource id="slave3" parent="parent">
+		<url>jdbc:mysql://localhost:3306/sharding?useUnicode=true&amp;characterEncoding=UTF-8&amp;zeroDateTimeBehavior=convertToNull
+		</url> 
+	</datasource>
+	<datasource id="slave4" parent="parent">
+		<url>jdbc:mysql://localhost:3306/sharding?useUnicode=true&amp;characterEncoding=UTF-8&amp;zeroDateTimeBehavior=convertToNull
+		</url>
+	</datasource>
+	<group id="trade">
+		<table name="user_copy" length="16">
+			<database-config>
+				<database masters="master1" slaves="slave1">
+					<tables range="1-8" />
+				</database>
+				<database masters="master2" slaves="slave2,slave3">
+					<tables range="9-16" />
+				</database><!-- 
+				<database masters="master3" slaves="slave3:80,slave4:10">
+					<tables range="17-24" />
+				</database>
+				<database masters="master3" slaves="slave3:80,slave4:10">
+					<tables range="25-32" />
+				</database>
+				<database masters="master3" slaves="slave3:80,slave4:10">
+					<tables range="33-40" />
+				</database>
+				<database masters="master3" slaves="slave3:80,slave4:10">
+					<tables range="41-48" />
+				</database>
+				<database masters="master3" slaves="slave3:80,slave4:10">
+					<tables range="49-56" />
+				</database>
+				<database masters="master3" slaves="slave3:80,slave4:10">
+					<tables range="57-64" />
+				</database>
+				<database masters="master3" slaves="slave3:80,slave4:10">
+					<tables range="65-72" />
+				</database>
+				<database masters="master3" slaves="slave3:80,slave4:10">
+					<tables range="73-80" />
+				</database>
+				<database masters="master3" slaves="slave3:80,slave4:10">
+					<tables range="81-88" />
+				</database>
+				<database masters="master3" slaves="slave3:80,slave4:10">
+					<tables range="89-96" />
+				</database>
+				<database masters="master3" slaves="slave3:80,slave4:10">
+					<tables range="97-104" />
+				</database>
+				<database masters="master3" slaves="slave3:80,slave4:10">
+					<tables range="105-112" />
+				</database>
+				<database masters="master3" slaves="slave3:80,slave4:10">
+					<tables range="113-120" />
+				</database>
+				<database masters="master3" slaves="slave3:80,slave4:10">
+					<tables range="121-128" /> 
+				</database>-->
+			</database-config>
+			<hashcolumns generator="default">
+				<column>id</column>
+				<script></script>
+			</hashcolumns>
+		</table>
+		<table name="sample_table" length="16"><!-- <names> <name>table1</name> 
+				<name>table2</name> <value>table3,table4,table5,table6,table7,table8,table9,table10</value> 
+				</names> -->
+			<database-config>
+				<database masters="master1" slaves="slave1">
+					<tables range="1-8" />
+				</database>
+				<database masters="master2" slaves="slave2,slave3"
+					readwrite="true">
+					<tables>
+						<names>
+							<name>table1</name>
+							<name>table2</name>
+							<value>table3,table4,table5,table6</value>
+						</names>
+					</tables>
+				</database>
+				<database masters="master3" slaves="slave3:80,slave4:10"
+					readwrite="true">
+					<tables>
+						<names>
+							<name>table1</name>
+							<name>table2</name>
+							<value>table3,table4,table5,table6</value>
+						</names>
+					</tables>
+				</database>
+			</database-config>
+			<hashcolumns generator="default">
+				<column>member_id</column>
+				<script></script>
+			</hashcolumns>
+		</table>
+	</group>
+
+	<group id="member">
+
+	</group>
+	<group id="market">
+
+	</group>
+</configurations>
