@@ -63,6 +63,7 @@
 		<property name="typeAliasesPackage" value="com.opensource.mybatis.sharding" />
 		<property name="dataSource" ref="dataSource1" />
 		<property name="plugins" ref="plugins" />
+		<property name="shardingConfigLocation" value="classpath*:sharding.xml" />
 	</bean>
 
 
