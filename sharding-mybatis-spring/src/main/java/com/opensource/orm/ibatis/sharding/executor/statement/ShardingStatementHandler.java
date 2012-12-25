@@ -43,7 +43,7 @@ import com.opensource.orm.sharding.router.DatabaseRouter;
 public class ShardingStatementHandler implements StatementHandler {
 	static Logger logger = LoggerFactory
 			.getLogger(ShardingStatementHandler.class);
-	StatementHandler statementHandler;
+	final StatementHandler statementHandler;
 	static final Map<String, Boolean> shardingMap = new HashMap<String, Boolean>();
 	static final ParametersResolver parametersResolver = new DefaultParametersResolver();
 

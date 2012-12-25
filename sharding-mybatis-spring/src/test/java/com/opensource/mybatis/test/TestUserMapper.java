@@ -21,9 +21,6 @@ public class TestUserMapper {
 
 	@Test
 	public void testInsert() {
-		DefaultConfigurationManager configurationManager = new DefaultConfigurationManager(
-				"D:/workspace_opensource/business_framework_svn/sharding-common/src/main/resources/sharding.xml");
-		String sql = "select * from order_table where member_id=?";
 		User user = new User();
 		user.setAge(20);
 		user.setName("Hello?");
@@ -32,10 +29,7 @@ public class TestUserMapper {
 
 	@Test
 	public void testUpdate() {
-		DefaultConfigurationManager configurationManager = new DefaultConfigurationManager(
-				"D:/workspace_opensource/business_framework_svn/sharding-common/src/main/resources/sharding.xml");
-		String sql = "select * from order_table where member_id=?";
-		User user = new User();
+	 	User user = new User();
 		user.setId(1L);
 		user.setAge(20);
 		user.setName("Hello22?6699");
@@ -49,20 +43,14 @@ public class TestUserMapper {
 
 	@Test
 	public void testFindById() {
-		DefaultConfigurationManager configurationManager = new DefaultConfigurationManager(
-				"D:/workspace_opensource/business_framework_svn/sharding-common/src/main/resources/sharding.xml");
-		String sql = "select * from order_table where member_id=?";
-		User user = userMapper.findById(2L);
+	 	User user = userMapper.findById(2L);
 		System.out.println(user.getName());
 	}
 
 	@Test
 	public void testListByParam() {
-		DefaultConfigurationManager configurationManager = new DefaultConfigurationManager(
-				"D:/workspace_opensource/business_framework_svn/sharding-common/src/main/resources/sharding.xml");
-		String sql = "select * from order_table where member_id=?";
-		List<User> userList = userMapper.listByParam("abcHello22?"); 
-		System.out.println("query result size:"+userList.size());
+		List<User> userList = userMapper.listByParam("abcHello22?");
+		System.out.println("query result size:" + userList.size());
 	}
 
 	@Test
