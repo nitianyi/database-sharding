@@ -64,17 +64,17 @@ public class DefaultConfigurationManager implements ConfigurationManager {
 	public DefaultConfigurationManager(String location) {
 		this.location = location;
 		instance = this;
-		try {
-			init();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 
 	public void init() throws FileNotFoundException, Exception {
 		dataSourceFactory.addDataSourceFactory(new DbcpDataSourceFactory());
-		Document doc = this.parseDocument(new FileInputStream(location));
+		parseConfiguration(new FileInputStream(location));
+		System.out.println("load success!");
+
+	}
+
+	protected void parseConfiguration(InputStream inputStream) throws Exception {
+		Document doc = this.parseDocument(inputStream);
 		List<Element> elements = DomUtils.getChildElements(doc
 				.getDocumentElement());
 		for (Element item : elements) {
@@ -136,8 +136,6 @@ public class DefaultConfigurationManager implements ConfigurationManager {
 				}
 			}
 		}
-		System.out.println("load success!");
-
 	}
 
 	protected Document parseDocument(InputStream inputStream) throws Exception {
