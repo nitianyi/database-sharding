@@ -9,6 +9,8 @@
 		<module>sharding-core</module>
 		<module>sharding-sqlparser</module>
 		<module>sharding-mybatis-spring</module>
+		<module>sharding-monitor-web</module>
+		<module>sharding-jdbc</module>
 	</modules>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
