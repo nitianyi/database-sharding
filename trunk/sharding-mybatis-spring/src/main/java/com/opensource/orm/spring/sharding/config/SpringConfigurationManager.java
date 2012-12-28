@@ -12,6 +12,7 @@ import org.springframework.core.io.support.ResourcePatternResolver;
 import com.opensource.orm.sharding.config.DefaultConfigurationManager;
 import com.opensource.orm.sharding.datasource.DbcpDataSourceFactory;
 import com.opensource.orm.spring.sharding.datasource.SpringDataSourceFactory;
+import com.opensource.orm.spring.sharding.factory.SpringObjectFactory;
 
 /**
  * @author luolishu
@@ -34,6 +35,7 @@ public class SpringConfigurationManager extends DefaultConfigurationManager
 	}
 
 	public void init() throws FileNotFoundException, Exception {
+		this.objectFactory = new SpringObjectFactory(applicationContext);
 		SpringDataSourceFactory factory = new SpringDataSourceFactory();
 		factory.setApplicationContext(applicationContext);
 		dataSourceFactory.addDataSourceFactory(factory);
