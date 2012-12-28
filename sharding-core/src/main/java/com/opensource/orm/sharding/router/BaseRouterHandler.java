@@ -13,6 +13,7 @@ import com.opensource.orm.sharding.config.TableConfig;
 import com.opensource.orm.sharding.hash.HashGenerator;
 import com.opensource.orm.sharding.hash.HashGeneratorFactory;
 import com.opensource.orm.sharding.info.ShardingInfo;
+import com.opensource.orm.sharding.loadbalance.LoadBalancer;
 import com.opensource.orm.sharding.utils.ArrayUtils;
 
 public abstract class BaseRouterHandler implements RouterHandler {
@@ -46,8 +47,8 @@ public abstract class BaseRouterHandler implements RouterHandler {
 		String tableNames[] = this.getTables(shardInfo.getTableName());
 		for (String shardTableName : tableNames) {
 			DefaultDatabaseTarget target = new DefaultDatabaseTarget();
-			target.datasource = this.getDataSource(
-					shardInfo.getStatementType(), shardTableName);
+			shardInfo.setShardTableName(shardTableName);
+			target.datasource = this.getDataSource(shardInfo);
 			target.parameters = parameters;
 			shardInfo.getTable().setName(shardTableName);
 			target.sql = shardInfo.generateNewSql();
@@ -63,8 +64,7 @@ public abstract class BaseRouterHandler implements RouterHandler {
 		shardInfo.getTable().setName(shardInfo.getTableName());
 		List<DatabaseTarget> targets = new LinkedList<DatabaseTarget>();
 		DefaultDatabaseTarget target = new DefaultDatabaseTarget();
-		target.datasource = this.getDataSource(shardInfo.getStatementType(),
-				shardInfo.getShardTableName());
+		target.datasource = this.getDataSource(shardInfo);
 		target.parameters = parameters;
 		target.sql = shardInfo.generateNewSql();
 		target.statementType = shardInfo.getStatementType();
@@ -82,8 +82,7 @@ public abstract class BaseRouterHandler implements RouterHandler {
 		shardInfo.getTable().setName(toTableName);
 		List<DatabaseTarget> targets = new LinkedList<DatabaseTarget>();
 		DefaultDatabaseTarget target = new DefaultDatabaseTarget();
-		target.datasource = this.getDataSource(shardInfo.getStatementType(),
-				shardInfo.getShardTableName());
+		target.datasource = this.getDataSource(shardInfo);
 		target.parameters = parameters;
 		target.sql = shardInfo.generateNewSql();
 		target.statementType = shardInfo.getStatementType();
@@ -91,10 +90,9 @@ public abstract class BaseRouterHandler implements RouterHandler {
 		return targets;
 	}
 
-	protected DataSource getDataSource(StatementType statementType,
-			String shardingTableName) {
-		return getConfigurationManager().getShardDataSource(statementType,
-				shardingTableName);
+	protected DataSource getDataSource(ShardingInfo shardInfo) {
+		LoadBalancer loadBalancer = null;
+		return loadBalancer.dispatch(shardInfo);
 	}
 
 	protected String[] getTables(String orgTableName) {
