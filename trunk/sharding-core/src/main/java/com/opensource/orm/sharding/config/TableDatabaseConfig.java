@@ -45,8 +45,7 @@ public class TableDatabaseConfig {
 	public void setSlaves(List<SlaveConfig> slaves) {
 		this.slaves = slaves;
 	}
-
-	public static class MasterConfig {
+	public static class DatabaseItem {
 		String dataSourceId;
 		int weights;
 
@@ -65,6 +64,9 @@ public class TableDatabaseConfig {
 		public void setWeights(int weights) {
 			this.weights = weights;
 		}
+	}
+	public static class MasterConfig extends DatabaseItem{
+		
 
 		@Override
 		public String toString() {
@@ -74,26 +76,8 @@ public class TableDatabaseConfig {
 
 	}
 
-	public static class SlaveConfig {
-		String dataSourceId;
-		int weights;
-
-		public String getDataSourceId() {
-			return dataSourceId;
-		}
-
-		public void setDataSourceId(String dataSourceId) {
-			this.dataSourceId = dataSourceId;
-		}
-
-		public int getWeights() {
-			return weights;
-		}
-
-		public void setWeights(int weights) {
-			this.weights = weights;
-		}
-
+	public static class SlaveConfig extends DatabaseItem{
+		 
 		@Override
 		public String toString() {
 			return "SlaveConfig [dataSourceId=" + dataSourceId + ", weights="
