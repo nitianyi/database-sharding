@@ -218,4 +218,9 @@ public class DefaultConfigurationManager implements ConfigurationManager {
 				"D:/workspace_opensource/business_framework_svn/sharding-common/src/main/resources/sharding.xml");
 	}
 
+	@Override
+	public DataSource getDataSource(String id) { 
+		return datasourceMap.get(id);
+	}
+
 }

@@ -27,4 +27,7 @@ public interface ConfigurationManager {
 	
 	public ObjectFactory getObjectFactory();
 	public Set<String> getShardedTables();
+	
+	
+	public DataSource getDataSource(String id);
 }
