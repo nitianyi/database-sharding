@@ -6,7 +6,6 @@ import java.util.List;
 import javax.sql.DataSource;
 
 import com.opensource.orm.sharding.DatabaseTarget;
-import com.opensource.orm.sharding.StatementType;
 import com.opensource.orm.sharding.config.ConfigurationManager;
 import com.opensource.orm.sharding.config.DefaultConfigurationManager;
 import com.opensource.orm.sharding.config.TableConfig;
@@ -14,9 +13,11 @@ import com.opensource.orm.sharding.hash.HashGenerator;
 import com.opensource.orm.sharding.hash.HashGeneratorFactory;
 import com.opensource.orm.sharding.info.ShardingInfo;
 import com.opensource.orm.sharding.loadbalance.LoadBalancer;
+import com.opensource.orm.sharding.loadbalance.RoundRobinLoadBalancer;
 import com.opensource.orm.sharding.utils.ArrayUtils;
 
 public abstract class BaseRouterHandler implements RouterHandler {
+	private LoadBalancer loadBalancer = new RoundRobinLoadBalancer();
 
 	public List<DatabaseTarget> handle(ShardingInfo shardInfo,
 			Object... parameters) {
@@ -91,7 +92,6 @@ public abstract class BaseRouterHandler implements RouterHandler {
 	}
 
 	protected DataSource getDataSource(ShardingInfo shardInfo) {
-		LoadBalancer loadBalancer = null;
 		return loadBalancer.dispatch(shardInfo);
 	}
 
