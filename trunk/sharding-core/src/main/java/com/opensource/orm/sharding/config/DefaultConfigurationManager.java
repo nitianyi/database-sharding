@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import javax.sql.DataSource;
 import javax.xml.parsers.DocumentBuilder;
@@ -31,6 +32,8 @@ import com.opensource.orm.sharding.datasource.DbcpDataSourceFactory;
 import com.opensource.orm.sharding.datasource.DelegateDataSourceFactory;
 import com.opensource.orm.sharding.factory.DefaultObjectFactory;
 import com.opensource.orm.sharding.factory.ObjectFactory;
+import com.opensource.orm.sharding.hash.DefaultHashGenerator;
+import com.opensource.orm.sharding.hash.HashGenerator;
 import com.opensource.orm.sharding.router.DatabaseRouter;
 import com.opensource.orm.sharding.router.DefaultDatabaseRouter;
 import com.opensource.orm.sharding.utils.xml.DomUtils;
@@ -48,6 +51,7 @@ public class DefaultConfigurationManager implements ConfigurationManager {
 	protected static final Map<String, List<TableConfig>> groupTableConfigs = new HashMap<String, List<TableConfig>>();
 	protected static final Map<String, DataSourceConfig> dataSourceConfigs = new HashMap<String, DataSourceConfig>();
 	protected static final Map<String, DataSource> datasourceMap = new HashMap<String, DataSource>();
+	protected static final Map<String, HashGenerator> generatorMap = new HashMap<String, HashGenerator>();
 	protected static DatabaseRouter router = new DefaultDatabaseRouter();
 	protected static final ConfigParser<DataSourceConfig> dataSourceConfigParser = new DataSourceConfigParser();
 	protected ConfigParser<TableConfig> tableConfigParser = new TableConfigParser();
@@ -56,6 +60,10 @@ public class DefaultConfigurationManager implements ConfigurationManager {
 	protected DelegateDataSourceFactory dataSourceFactory = new DelegateDataSourceFactory();
 	protected ObjectFactory objectFactory = new DefaultObjectFactory();
 	protected static final Set<String> shardedTables = new LinkedHashSet<String>();
+	protected ThreadPoolExecutor threadPoolExecutor;
+	static {
+		generatorMap.put("default", new DefaultHashGenerator());
+	}
 
 	public DefaultConfigurationManager() {
 		this(null);
@@ -85,6 +93,9 @@ public class DefaultConfigurationManager implements ConfigurationManager {
 				dataSourceConfigs.put(key, datasourceConfig);
 
 			}
+			if ("generator".equalsIgnoreCase(item.getNodeName())) {
+				this.parseGenerator(item);
+			}
 		}
 		for (Map.Entry<String, DataSourceConfig> entry : dataSourceConfigs
 				.entrySet()) {
@@ -105,6 +116,9 @@ public class DefaultConfigurationManager implements ConfigurationManager {
 				}
 			}
 			DataSource dataSource = dataSourceFactory.create(datasourceConfig);
+			if (dataSource == null) {
+				continue;
+			}
 			String key = datasourceConfig.getId();
 			datasourceMap.put(key, dataSource);
 
@@ -122,9 +136,11 @@ public class DefaultConfigurationManager implements ConfigurationManager {
 						shardedTables.addAll(Arrays.asList(tableConfig
 								.getTables()));
 						groupList.add(tableConfig);
-						tableConfigs.put(tableConfig.getName(), tableConfig);
+						tableConfigs.put(tableConfig.getName().toUpperCase(),
+								tableConfig);
 						for (String shardTable : tableConfig.getTables()) {
-							tableConfigs.put(shardTable, tableConfig);
+							tableConfigs.put(shardTable.toUpperCase(),
+									tableConfig);
 						}
 						for (TableDatabaseConfig database : tableConfig
 								.getDatabaseConfigs()) {
@@ -136,6 +152,14 @@ public class DefaultConfigurationManager implements ConfigurationManager {
 				}
 			}
 		}
+	}
+
+	protected void parseGenerator(Element e) throws Exception {
+		String id = DomUtils.getAttribuite(e, "id");
+		String className = DomUtils.getAttribuite(e, "class");
+		Class<?> claz = Class.forName(className);
+		HashGenerator generator = (HashGenerator) claz.newInstance();
+		generatorMap.put(id, generator);
 	}
 
 	protected Document parseDocument(InputStream inputStream) throws Exception {
@@ -194,7 +218,7 @@ public class DefaultConfigurationManager implements ConfigurationManager {
 	}
 
 	public TableConfig getTableConfig(String tableName) {
-		return tableConfigs.get(tableName);
+		return tableConfigs.get(tableName.toUpperCase());
 	}
 
 	public TableDatabaseConfig getDatabaseConfig(String tableName) {
@@ -213,14 +237,24 @@ public class DefaultConfigurationManager implements ConfigurationManager {
 		return shardedTables;
 	}
 
-	public static void main(String... args) {
-		DefaultConfigurationManager configurationManager = new DefaultConfigurationManager(
-				"D:/workspace_opensource/business_framework_svn/sharding-common/src/main/resources/sharding.xml");
+	@Override
+	public DataSource getDataSource(String id) {
+		return datasourceMap.get(id);
 	}
 
 	@Override
-	public DataSource getDataSource(String id) { 
-		return datasourceMap.get(id);
+	public ThreadPoolExecutor getQueryThreadPool() {
+		return threadPoolExecutor;
+	}
+
+	@Override
+	public HashGenerator getHashGenerator(String id) {
+		return generatorMap.get(id);
+	}
+
+	public static void main(String... args) {
+		DefaultConfigurationManager configurationManager = new DefaultConfigurationManager(
+				"D:/workspace_opensource/business_framework_svn/sharding-common/src/main/resources/sharding.xml");
 	}
 
 }

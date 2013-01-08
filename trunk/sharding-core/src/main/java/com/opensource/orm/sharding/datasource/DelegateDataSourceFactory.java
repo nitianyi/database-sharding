@@ -26,6 +26,9 @@ public class DelegateDataSourceFactory implements DataSourceFactory {
 	}
 
 	public DataSource create(DataSourceConfig config) throws Exception {
+		if(config.isAbstract()){
+			return null;
+		}
 		for (DataSourceFactory factory : factorys) {
 			try {
 				DataSource dataSource = factory.create(config);

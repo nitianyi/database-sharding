@@ -7,6 +7,7 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
+import com.opensource.orm.sharding.config.ConfigurationException;
 import com.opensource.orm.sharding.config.ConfigurationManager;
 import com.opensource.orm.sharding.config.DefaultConfigurationManager;
 import com.opensource.orm.sharding.config.TableDatabaseConfig;
@@ -25,6 +26,9 @@ public abstract class ReadWriteLoadBalancer implements LoadBalancer {
 				.getInstance();
 		TableDatabaseConfig databaseConfig = configurationManager
 				.getDatabaseConfig(shardInfo.getShardTableName());
+		if(databaseConfig==null){
+			throw new ConfigurationException("table config error!shardInfo="+shardInfo);
+		}
 		if (databaseConfig.isReadwrite()) {
 			switch (shardInfo.getStatementType()) {
 			case INSERT:

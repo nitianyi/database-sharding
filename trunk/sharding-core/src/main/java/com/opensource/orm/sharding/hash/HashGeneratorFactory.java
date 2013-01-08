@@ -1,5 +1,6 @@
 package com.opensource.orm.sharding.hash;
 
+import com.opensource.orm.sharding.config.DefaultConfigurationManager;
 import com.opensource.orm.sharding.config.TableConfig;
 
 public abstract class HashGeneratorFactory {
@@ -11,6 +12,7 @@ public abstract class HashGeneratorFactory {
 				&& config.getScript().trim().length() > 0) {
 			return scriptGenerator;
 		}
-		return defaultHashGenerator;
+		return DefaultConfigurationManager.getInstance().getHashGenerator(
+				config.getGenerator());
 	}
 }
