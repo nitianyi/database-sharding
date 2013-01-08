@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.opensource.mybatis.sharding.mapper.CustomerMapper">
+ 
+ <insert id="insert" parameterType="customer">
+    <![CDATA[
+    INSERT INTO Customer (create_time,name,address)
+    VALUES(#{createTime},#{name},#{address})
+    ]]>
+    <selectKey resultType="long" keyProperty="id">
+            SELECT LAST_INSERT_ID() AS ID
+    </selectKey>
+  </insert>
+  <update id="update" parameterType="customer">
+      <![CDATA[    
+      update  Customer set name=#{name},address=#{address} where id=#{id} 
+      ]]>
+  </update> 
+  <sql id="CUSTOMER_SELECT">
+      <![CDATA[
+        select * from Customer
+      ]]>
+  </sql>
+  <select id="findById" resultType="customer" parameterType="int">
+     <include refid="CUSTOMER_SELECT"/>
+     <![CDATA[
+      where id=#{id}
+      ]]>
+  </select>
+  <select id="findByName" resultType="customer" parameterType="String">
+     <include refid="CUSTOMER_SELECT"/>
+     <![CDATA[
+      where name=#{name}
+      ]]>
+  </select>
+  
+  <select id="listById" resultType="customer" parameterType="int">
+     <include refid="CUSTOMER_SELECT"/>
+     <![CDATA[
+      where id=#{id}
+      ]]>
+  </select>
+   <select id="listByParam" resultType="customer" parameterType="int">
+     <include refid="CUSTOMER_SELECT"/>
+     <![CDATA[
+      where id=#{id}
+      ]]>
+  </select> 
+</mapper>
