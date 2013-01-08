@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.opensource.mybatis.sharding.mapper.OrdersMapper">
+
+	<insert id="insert" parameterType="orders">
+    <![CDATA[
+    INSERT INTO Orders (create_time,trx_time,name,address)
+    VALUES(#{createTime},#{trxTime},#{name},#{address})
+    ]]>
+		<selectKey resultType="long" keyProperty="id">
+			SELECT
+			LAST_INSERT_ID() AS ID
+		</selectKey>
+	</insert>
+	<update id="update" parameterType="orders">
+      <![CDATA[    
+      update  Orders set name=#{name},address=#{address} where id=#{id} and trx_time=#{trxTime}
+      ]]>
+	</update>
+	<sql id="ORDERS_SELECT">
+      <![CDATA[
+        select * from Orders
+      ]]>
+	</sql>
+	<select id="findById" resultType="orders" parameterType="int">
+		<include refid="ORDERS_SELECT" />
+     <![CDATA[
+      where id=#{id} and trx_time=#{trxTime}
+      ]]>
+	</select>
+	<select id="listByParam" resultType="orders" parameterType="orders">
+		<include refid="ORDERS_SELECT" />
+     <![CDATA[
+      where id=#{id} and trx_time=#{trxTime}
+      ]]>
+	</select>
+</mapper>

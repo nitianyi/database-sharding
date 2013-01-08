@@ -1,6 +1,8 @@
 package com.opensource.orm.spring.sharding.config;
 
 import java.io.FileNotFoundException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -46,6 +48,7 @@ public class SpringConfigurationManager extends DefaultConfigurationManager
 			this.parseConfiguration(res.getInputStream());
 		}
 
+		threadPoolExecutor=(ThreadPoolExecutor) Executors.newFixedThreadPool(500);
 	}
 
 	@Override

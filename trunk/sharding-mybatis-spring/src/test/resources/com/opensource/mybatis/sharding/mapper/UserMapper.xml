@@ -6,7 +6,7 @@
  
  <insert id="insert" parameterType="user">
     <![CDATA[
-    INSERT INTO user_copy (name,age)
+    INSERT INTO user (name,age)
     VALUES(#{name},#{age})
     ]]>
     <selectKey resultType="long" keyProperty="id">
@@ -15,29 +15,29 @@
   </insert>
   <update id="update" parameterType="user">
       <![CDATA[    
-      update  user_copy set name=#{name},age=#{age} where id=#{id} 
+      update  user set name=#{name},age=#{age} where id=#{id} 
       ]]>
   </update> 
-  <sql id="user_copy_SELECT">
+  <sql id="user_SELECT">
       <![CDATA[
-        select * from user_copy
+        select * from user
       ]]>
   </sql>
   <select id="findById" resultType="user" parameterType="int">
-     <include refid="user_copy_SELECT"/>
+     <include refid="user_SELECT"/>
      <![CDATA[
       where id=#{id}
       ]]>
   </select>
    <select id="listByParam" resultType="user" parameterType="string">
-     <include refid="user_copy_SELECT"/>
+     <include refid="user_SELECT"/>
      <![CDATA[
       where name=#{name}
       ]]>
   </select>
   <!-- 
-  <select id="listByParam" resultType="user_copy" parameterType="activityQueryParam">
-     <include refid="user_copy_SELECT"/>
+  <select id="listByParam" resultType="user" parameterType="activityQueryParam">
+     <include refid="user_SELECT"/>
      <include refid="SELECT_LIST_BY_PARAM_CONDITION"/>
       limit #{offset},#{pageSize}
   </select>

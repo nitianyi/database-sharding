@@ -8,6 +8,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -21,6 +22,7 @@ import org.apache.ibatis.executor.parameter.ParameterHandler;
 import org.apache.ibatis.executor.statement.StatementHandler;
 import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.mapping.MappedStatement;
+import org.apache.ibatis.mapping.SqlCommandType;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.transaction.Transaction;
 import org.mybatis.spring.transaction.SpringManagedTransaction;
@@ -30,6 +32,9 @@ import org.slf4j.LoggerFactory;
 import com.opensource.orm.ibatis.sharding.executor.DefaultParametersResolver;
 import com.opensource.orm.ibatis.sharding.executor.ExecutorContext;
 import com.opensource.orm.ibatis.sharding.executor.ParametersResolver;
+import com.opensource.orm.ibatis.sharding.executor.task.ConcurrentQueryTaskExecutor;
+import com.opensource.orm.ibatis.sharding.executor.task.QueryTask;
+import com.opensource.orm.ibatis.sharding.executor.task.QueryTaskExecutor;
 import com.opensource.orm.ibatis.sharding.transaction.ShardingManagedTransaction;
 import com.opensource.orm.sharding.DatabaseTarget;
 import com.opensource.orm.sharding.ShardingNotSupportException;
@@ -46,6 +51,7 @@ public class ShardingStatementHandler implements StatementHandler {
 	final StatementHandler statementHandler;
 	static final Map<String, Boolean> shardingMap = new HashMap<String, Boolean>();
 	static final ParametersResolver parametersResolver = new DefaultParametersResolver();
+	static final QueryTaskExecutor taskExecutor = new ConcurrentQueryTaskExecutor();
 
 	public ShardingStatementHandler(StatementHandler statementHandler) {
 		this.statementHandler = statementHandler;
@@ -77,7 +83,11 @@ public class ShardingStatementHandler implements StatementHandler {
 	@Override
 	public <E> List<E> query(Statement statement, ResultHandler resultHandler)
 			throws SQLException {
-		if (isShardingSupport(ExecutorContext.getContext().getMappedStatement())) {
+		ExecutorContext context = ExecutorContext.getContext();
+		MappedStatement mappedStatement = context.getMappedStatement();
+		if (isShardingSupport(ExecutorContext.getContext().getMappedStatement())
+				&& SqlCommandType.SELECT.equals(mappedStatement
+						.getSqlCommandType())) {
 			return this.shardingQuery(statement, resultHandler);
 		}
 		return statementHandler.query(statement, resultHandler);
@@ -122,29 +132,15 @@ public class ShardingStatementHandler implements StatementHandler {
 			throws SQLException {
 		ShardingManagedTransaction transaction = (ShardingManagedTransaction) ExecutorContext
 				.getContext().getExecutor().getTransaction();
-		List<E> results = new LinkedList<E>(), subResults;
+		List<E> results;
 		try {
+			List<QueryTask> tasks = new ArrayList<QueryTask>(targets.size());
 			for (DatabaseTarget target : targets) {
-				if (logger.isDebugEnabled()) {
-					logger.debug("routing to target is:=" + target);
-				}
-				System.out.println(target);
-				Transaction newTransaction = this.createTransaction(target
-						.getDataSource());
-				transaction.setCurrentTransaction(newTransaction);
-				Statement statement = prepare(newTransaction.getConnection(),
-						target.getSql());
-				statementHandler.parameterize(statement);
-				try {
-					subResults = statementHandler.query(statement,
-							resultHandler);
-				} finally {
-					closeStatement(statement);
-				}
-				if (subResults != null) {
-					results.addAll(subResults);
-				}
+				QueryTask task = new QueryTask(statementHandler, target,
+						transaction, resultHandler, mappedStatement);
+				tasks.add(task);
 			}
+			results = taskExecutor.execute(tasks);
 		} finally {
 			transaction.reset();
 		}
@@ -227,7 +223,7 @@ public class ShardingStatementHandler implements StatementHandler {
 		}
 	}
 
-	protected void closeStatement(Statement statement) {
+	public void closeStatement(Statement statement) {
 		try {
 			if (statement != null) {
 				statement.close();
@@ -283,10 +279,9 @@ public class ShardingStatementHandler implements StatementHandler {
 				if (logger.isDebugEnabled()) {
 					logger.debug("routing to target is:=" + target);
 				}
-				System.out.println(target);
 				Transaction newTransaction = this.createTransaction(target
 						.getDataSource());
-				transaction.setCurrentTransaction(newTransaction);
+				transaction.addTransaction(newTransaction);
 				Statement statement = prepare(newTransaction.getConnection(),
 						target.getSql());
 				statementHandler.parameterize(statement);
@@ -303,6 +298,9 @@ public class ShardingStatementHandler implements StatementHandler {
 	}
 
 	private boolean isShardingSupport(MappedStatement mappedStatement) {
+		if (mappedStatement.getId().endsWith("selectKey")) {
+			return false;
+		}
 		Boolean flag = shardingMap.get(mappedStatement.getId());
 		return flag == null ? true : flag.booleanValue();
 	}

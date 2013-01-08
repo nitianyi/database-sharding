@@ -11,7 +11,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.opensource.mybatis.sharding.domain.User;
 import com.opensource.mybatis.sharding.mapper.UserMapper;
-import com.opensource.orm.sharding.config.DefaultConfigurationManager;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "classpath:spring-test-main.xml" })

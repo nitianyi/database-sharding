@@ -29,7 +29,7 @@ public class ShardingManagedTransaction implements Transaction {
 
 	}
 
-	public void setCurrentTransaction(Transaction tx) {
+	public void addTransaction(Transaction tx) {
 		this.currentTransaction = tx;
 		transactions.add(tx);
 	}
@@ -44,6 +44,8 @@ public class ShardingManagedTransaction implements Transaction {
 		for (Transaction tx : transactions) {
 			tx.close();
 		}
+		defaultTransaction.close(); 
+		currentTransaction.close();
 	}
 
 	public void clearTransactions() {
