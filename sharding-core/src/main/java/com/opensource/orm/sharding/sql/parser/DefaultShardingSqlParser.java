@@ -75,8 +75,8 @@ public class DefaultShardingSqlParser implements ShardingSqlParser {
 				columns[i] = insertSmt.getColumns().get(i).getColumnName();
 				i++;
 			}
-		}else{
-			//TODO find columns from database
+		} else {
+			// TODO find columns from database
 		}
 		return columns;
 	}
@@ -170,6 +170,9 @@ public class DefaultShardingSqlParser implements ShardingSqlParser {
 
 		PlainSelect plainSelect = (PlainSelect) selectSmt.getSelectBody();
 		Table table = (Table) plainSelect.getFromItem();
+		if (table == null) {
+			return null;
+		}
 		String tableName = table.getName();
 		TableConfig tableShardingConfig = getConfigurationManager()
 				.getTableConfig(tableName);

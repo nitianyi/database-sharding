@@ -20,7 +20,8 @@ import com.opensource.orm.sharding.utils.xml.DomUtils;
  * 
  */
 public class TableConfigParser implements ConfigParser<TableConfig> {
-	TableDatabaseConfigParser databaseParser=new TableDatabaseConfigParser();
+	TableDatabaseConfigParser databaseParser = new TableDatabaseConfigParser();
+
 	public TableConfig parse(Element e) {
 		TableConfig tableConfig = new TableConfig();
 		tableConfig.setName(e.getAttribute("name"));
@@ -31,9 +32,9 @@ public class TableConfigParser implements ConfigParser<TableConfig> {
 	}
 
 	private void parseTableNames(Element e, TableConfig tableConfig) {
-		Element namesEl = DomUtils.getChildElementByTagName(e, "names");		
+		Element namesEl = DomUtils.getChildElementByTagName(e, "names");
 		List<String> tables = new LinkedList<String>();
-		if (namesEl != null  ) {
+		if (namesEl != null) {
 			List<Element> nameList = DomUtils.getChildElements(namesEl);
 			for (Element item : nameList) {
 				if ("name".equalsIgnoreCase(item.getNodeName())) {
@@ -54,15 +55,19 @@ public class TableConfigParser implements ConfigParser<TableConfig> {
 					"configuration Error!table names is not right!table name="
 							+ tableConfig.getName());
 		}
-		tableConfig.setTables(tables.toArray(new String[]{}));
+		tableConfig.setTables(tables.toArray(new String[] {}));
 	}
 
 	private void parseHash(Element e, TableConfig tableConfig) {
 
 		Element hashColumns = DomUtils.getChildElementByTagName(e,
 				"hashcolumns");
-
-		tableConfig.setGenerator(hashColumns.getAttribute("generator"));
+		String generator = hashColumns.getAttribute("generator");
+		if (generator != null && generator.trim().length() > 0) {
+			tableConfig.setGenerator(generator);
+		} else {
+			tableConfig.setGenerator("default");
+		}
 		List<Element> columnElList = DomUtils.getChildElementsByTagName(
 				hashColumns, "column");
 		List<String> columns = new LinkedList<String>();
@@ -81,7 +86,7 @@ public class TableConfigParser implements ConfigParser<TableConfig> {
 		Element databaseConfigEl = DomUtils.getChildElementByTagName(e,
 				"database-config");
 		List<Element> childs = DomUtils.getChildElements(databaseConfigEl);
-		List<TableDatabaseConfig> databaseList=new LinkedList<TableDatabaseConfig>();
+		List<TableDatabaseConfig> databaseList = new LinkedList<TableDatabaseConfig>();
 		for (Element child : childs) {
 			databaseList.add(databaseParser.parse(child, tableConfig));
 		}

@@ -15,7 +15,7 @@ public class TableConfig {
 	String[] columns;
 	String[] tables;
 	String script;
-	String generator;
+	String generator = "default";
 	List<TableDatabaseConfig> databaseConfigs;
 
 	public String getName() {
@@ -75,5 +75,4 @@ public class TableConfig {
 				+ databaseConfigs + "]";
 	}
 
-	 
 }
