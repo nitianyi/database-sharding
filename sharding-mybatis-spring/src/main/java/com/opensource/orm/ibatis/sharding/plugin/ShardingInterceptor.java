@@ -10,7 +10,7 @@ import org.apache.ibatis.executor.statement.StatementHandler;
 import org.apache.ibatis.plugin.Interceptor;
 import org.apache.ibatis.plugin.Invocation;
 
-import com.opensource.orm.ibatis.sharding.executor.ShardingExecutor;
+import com.opensource.orm.ibatis.sharding.executor.DelegateShardingExecutor;
 import com.opensource.orm.ibatis.sharding.executor.statement.ShardingStatementHandler;
 
 /**
@@ -28,7 +28,7 @@ public class ShardingInterceptor implements Interceptor {
 	@Override
 	public Object plugin(Object target) {
 		if (target instanceof Executor) {
-			return new ShardingExecutor((Executor) target);
+			return new DelegateShardingExecutor((Executor) target);
 		}
 		if (target instanceof StatementHandler) {
 			return new ShardingStatementHandler((StatementHandler) target);

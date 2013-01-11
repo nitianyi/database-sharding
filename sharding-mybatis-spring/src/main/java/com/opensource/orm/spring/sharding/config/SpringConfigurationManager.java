@@ -13,6 +13,7 @@ import org.springframework.core.io.support.ResourcePatternResolver;
 
 import com.opensource.orm.sharding.config.DefaultConfigurationManager;
 import com.opensource.orm.sharding.datasource.DbcpDataSourceFactory;
+import com.opensource.orm.sharding.utils.StringUtils;
 import com.opensource.orm.spring.sharding.datasource.SpringDataSourceFactory;
 import com.opensource.orm.spring.sharding.factory.SpringObjectFactory;
 
@@ -42,13 +43,16 @@ public class SpringConfigurationManager extends DefaultConfigurationManager
 		factory.setApplicationContext(applicationContext);
 		dataSourceFactory.addDataSourceFactory(factory);
 		dataSourceFactory.addDataSourceFactory(new DbcpDataSourceFactory());
-		ResourcePatternResolver resourceLoader = new PathMatchingResourcePatternResolver();
-		Resource[] resources = resourceLoader.getResources(location);
-		for (Resource res : resources) {
-			this.parseConfiguration(res.getInputStream());
+		if (StringUtils.isNotBlank(location)) {
+			ResourcePatternResolver resourceLoader = new PathMatchingResourcePatternResolver();
+			Resource[] resources = resourceLoader.getResources(location);
+			for (Resource res : resources) {
+				this.parseConfiguration(res.getInputStream());
+			}
 		}
 
-		threadPoolExecutor=(ThreadPoolExecutor) Executors.newFixedThreadPool(500);
+		threadPoolExecutor = (ThreadPoolExecutor) Executors
+				.newFixedThreadPool(500);
 	}
 
 	@Override

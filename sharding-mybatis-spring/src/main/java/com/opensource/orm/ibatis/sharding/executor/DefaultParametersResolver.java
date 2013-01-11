@@ -46,7 +46,7 @@ public class DefaultParametersResolver implements ParametersResolver {
 						value = metaObject == null ? null : metaObject
 								.getValue(propertyName);
 					}
-					TypeHandler typeHandler = parameterMapping.getTypeHandler();
+					TypeHandler<?> typeHandler = parameterMapping.getTypeHandler();
 					if (typeHandler == null) {
 						throw new ExecutorException(
 								"There was no TypeHandler found for parameter "

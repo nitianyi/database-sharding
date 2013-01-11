@@ -4,6 +4,7 @@
 package com.opensource.mybatis.sharding.generator;
 
 import com.opensource.orm.sharding.hash.HashGenerator;
+import com.opensource.orm.sharding.hash.ShardContext;
 
 /**
  * @author luolishu
@@ -12,9 +13,10 @@ import com.opensource.orm.sharding.hash.HashGenerator;
 public class CustomGenerator implements HashGenerator {
  
 	@Override
-	public String generateTableName(String tableName, String[] hashColumns,
-			Object[] hashValues) {
-		// TODO Auto-generated method stub
+	public String generateTableName(ShardContext hashInfo) {
+		String tableName=hashInfo.getTableName();
+		String[] hashColumns=hashInfo.getColumns();
+		Object[] hashValues=hashInfo.getValues();
 		return "customer5";
 	}
 

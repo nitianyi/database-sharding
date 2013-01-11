@@ -30,7 +30,7 @@ public class TestOrdersMapper {
 			order.setAddress("dafdaslfasjdlfaskj");
 			order.setCreateTime(new Date());
 			ordersMapper.insert(order);
-			/*System.out.println(customer);*/
+			System.out.println(order);
 		}
 		System.out.println("spent time=:"+(System.currentTimeMillis()-time));
 	}
