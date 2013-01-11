@@ -62,11 +62,11 @@ public class JdbcShardingInfo implements ShardingInfo {
 		this.tableName = tableName;
 	}
 
-	public String getShardTableName() {
+	public String getTargetTableName() {
 		return shardTableName;
 	}
 
-	public void setShardTableName(String shardTableName) {
+	public void setTargetTableName(String shardTableName) {
 		this.shardTableName = shardTableName;
 	}
 

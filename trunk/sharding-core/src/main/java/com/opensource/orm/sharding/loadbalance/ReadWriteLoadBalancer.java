@@ -25,7 +25,7 @@ public abstract class ReadWriteLoadBalancer implements LoadBalancer {
 		ConfigurationManager configurationManager = DefaultConfigurationManager
 				.getInstance();
 		TableDatabaseConfig databaseConfig = configurationManager
-				.getDatabaseConfig(shardInfo.getShardTableName());
+				.getDatabaseConfig(shardInfo.getTargetTableName());
 		if(databaseConfig==null){
 			throw new ConfigurationException("table config error!shardInfo="+shardInfo);
 		}
