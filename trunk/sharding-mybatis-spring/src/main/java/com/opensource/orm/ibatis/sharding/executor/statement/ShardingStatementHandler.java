@@ -9,10 +9,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import javax.sql.DataSource;
 
@@ -32,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import com.opensource.orm.ibatis.sharding.executor.DefaultParametersResolver;
 import com.opensource.orm.ibatis.sharding.executor.ExecutorContext;
 import com.opensource.orm.ibatis.sharding.executor.ParametersResolver;
+import com.opensource.orm.ibatis.sharding.executor.ShardingHelper;
 import com.opensource.orm.ibatis.sharding.executor.task.ConcurrentQueryTaskExecutor;
 import com.opensource.orm.ibatis.sharding.executor.task.QueryTask;
 import com.opensource.orm.ibatis.sharding.executor.task.QueryTaskExecutor;
@@ -49,7 +47,6 @@ public class ShardingStatementHandler implements StatementHandler {
 	static Logger logger = LoggerFactory
 			.getLogger(ShardingStatementHandler.class);
 	final StatementHandler statementHandler;
-	static final Map<String, Boolean> shardingMap = new HashMap<String, Boolean>();
 	static final ParametersResolver parametersResolver = new DefaultParametersResolver();
 	static final QueryTaskExecutor taskExecutor = new ConcurrentQueryTaskExecutor();
 
@@ -74,7 +71,8 @@ public class ShardingStatementHandler implements StatementHandler {
 
 	@Override
 	public int update(Statement statement) throws SQLException {
-		if (isShardingSupport(ExecutorContext.getContext().getMappedStatement())) {
+		if (statement==null||ShardingHelper.isShardingSupport(ExecutorContext.getContext()
+				.getMappedStatement())) {
 			return this.shardingUpdate(statement);
 		}
 		return statementHandler.update(statement);
@@ -85,7 +83,8 @@ public class ShardingStatementHandler implements StatementHandler {
 			throws SQLException {
 		ExecutorContext context = ExecutorContext.getContext();
 		MappedStatement mappedStatement = context.getMappedStatement();
-		if (isShardingSupport(ExecutorContext.getContext().getMappedStatement())
+		if (statement==null||ShardingHelper.isShardingSupport(ExecutorContext.getContext()
+				.getMappedStatement())
 				&& SqlCommandType.SELECT.equals(mappedStatement
 						.getSqlCommandType())) {
 			return this.shardingQuery(statement, resultHandler);
@@ -110,15 +109,15 @@ public class ShardingStatementHandler implements StatementHandler {
 						parametersResolver.resolve(mappedStatement,
 								this.getBoundSql(), context.getParameter()));
 			} catch (ShardingNotSupportException e) {
-				shardingMap.put(mappedStatement.getId(), false);
+				ShardingHelper.setSharding(mappedStatement.getId(), false);
 				e.printStackTrace();
 			}
 			if (targets != null && !targets.isEmpty()) {
-				shardingMap.put(mappedStatement.getId(), true);
+				ShardingHelper.setSharding(mappedStatement.getId(), true);
 				return this.doShardingQuery(targets, mappedStatement,
 						resultHandler);
 			} else {// give chance to the normal query
-				shardingMap.put(mappedStatement.getId(), false);
+				ShardingHelper.setSharding(mappedStatement.getId(), false);
 				return statementHandler.query(statement, resultHandler);
 			}
 		default:
@@ -253,14 +252,14 @@ public class ShardingStatementHandler implements StatementHandler {
 						parametersResolver.resolve(mappedStatement,
 								this.getBoundSql(), context.getParameter()));
 			} catch (ShardingNotSupportException e) {
-				shardingMap.put(mappedStatement.getId(), false);
+				ShardingHelper.setSharding(mappedStatement.getId(), false);
 				e.printStackTrace();
 			}
 			if (targets != null && !targets.isEmpty()) {
-				shardingMap.put(mappedStatement.getId(), true);
+				ShardingHelper.setSharding(mappedStatement.getId(), true);
 				return this.doShardingUpdate(targets);
 			} else {// give chance to the normal query
-				shardingMap.put(mappedStatement.getId(), false);
+				ShardingHelper.setSharding(mappedStatement.getId(), false);
 				return statementHandler.update(statement);
 			}
 		default:
@@ -295,14 +294,6 @@ public class ShardingStatementHandler implements StatementHandler {
 			transaction.reset();
 		}
 		return updateCount;
-	}
-
-	private boolean isShardingSupport(MappedStatement mappedStatement) {
-		if (mappedStatement.getId().endsWith("selectKey")) {
-			return false;
-		}
-		Boolean flag = shardingMap.get(mappedStatement.getId());
-		return flag == null ? true : flag.booleanValue();
 	}
 
 	@Override

@@ -14,8 +14,8 @@ import com.opensource.mybatis.sharding.domain.Customer;
 import com.opensource.mybatis.sharding.mapper.CustomerMapper;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = { "classpath:spring-test-main.xml" })
-public class TestCustomerMapper {
+@ContextConfiguration(locations = { "classpath:spring-mybatis-bug.xml" })
+public class TestCustomerMapper2 {
 	@Resource
 	CustomerMapper customerMapper;
 
@@ -28,7 +28,7 @@ public class TestCustomerMapper {
 			customer.setAddress("dafdaslfasjdlfaskj");
 			customer.setCreateTime(new Date());
 			customerMapper.insert(customer);
-			 /*System.out.println(customer); */
+			/* System.out.println(customer); */
 		}
 		System.out
 				.println("spent time=:" + (System.currentTimeMillis() - time));

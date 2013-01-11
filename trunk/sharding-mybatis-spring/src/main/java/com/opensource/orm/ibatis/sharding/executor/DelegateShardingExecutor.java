@@ -12,6 +12,8 @@ import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.reflection.MetaObject;
+import org.apache.ibatis.session.Configuration;
+import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
 import org.apache.ibatis.transaction.Transaction;
@@ -20,10 +22,10 @@ import org.apache.ibatis.transaction.Transaction;
  * @author luolishu
  * 
  */
-public class ShardingExecutor implements Executor {
-	final Executor executor;
-	
-	public ShardingExecutor(Executor executor) {
+public class DelegateShardingExecutor implements Executor {
+	Executor executor;
+
+	public DelegateShardingExecutor(Executor executor) {
 		this.executor = executor;
 	}
 
@@ -32,13 +34,24 @@ public class ShardingExecutor implements Executor {
 		try {
 			ExecutorContext context = new ExecutorContext();
 			ExecutorContext.setContext(context);
+
 			context.setMappedStatement(ms);
 			context.setParameter(parameter);
 			context.setExecutor(this);
+			if (ShardingHelper.isShardingParsedSupport(ms)) {
+				return this.shardingUpdate(ms, parameter);
+			}
 			return this.executor.update(ms, parameter);
 		} finally {
 			ExecutorContext.setContext(null);
 		}
+	}
+
+	public int shardingUpdate(MappedStatement ms, Object parameter)
+			throws SQLException {
+		executor = createExecutor(ExecutorType.SIMPLE, ms.getConfiguration(),
+				this.getTransaction());
+		return executor.update(ms, parameter);
 	}
 
 	@Override
@@ -51,11 +64,37 @@ public class ShardingExecutor implements Executor {
 			context.setMappedStatement(ms);
 			context.setParameter(parameter);
 			context.setExecutor(this);
+			if (ShardingHelper.isShardingParsedSupport(ms)) {
+				return this.shardingQuery(ms, parameter, rowBounds,
+						resultHandler, cacheKey, boundSql);
+			}
 			return this.executor.query(ms, parameter, rowBounds, resultHandler,
 					cacheKey, boundSql);
 		} finally {
 			ExecutorContext.setContext(null);
 		}
+	}
+
+	public <E> List<E> shardingQuery(MappedStatement ms, Object parameter,
+			RowBounds rowBounds, ResultHandler resultHandler,
+			CacheKey cacheKey, BoundSql boundSql) throws SQLException {
+		executor = createExecutor(ExecutorType.SIMPLE, ms.getConfiguration(),
+				this.getTransaction());
+		return this.executor.query(ms, parameter, rowBounds, resultHandler,
+				cacheKey, boundSql);
+	}
+
+	private Executor createExecutor(ExecutorType execType,
+			Configuration configuration, Transaction transaction) {
+		switch (execType) {
+		case SIMPLE:
+			return new ShardingSimpleExecutor(configuration,
+					this.getTransaction());
+		case REUSE:
+			return new ShardingReuseExecutor(configuration,
+					this.getTransaction());
+		}
+		return executor;
 	}
 
 	@Override
@@ -68,10 +107,23 @@ public class ShardingExecutor implements Executor {
 			context.setMappedStatement(ms);
 			context.setParameter(parameter);
 			context.setExecutor(this);
+			if (ShardingHelper.isShardingParsedSupport(ms)) {
+				return this.shardingQuery(ms, parameter, rowBounds,
+						resultHandler);
+			}
 			return this.executor.query(ms, parameter, rowBounds, resultHandler);
 		} finally {
 			ExecutorContext.setContext(null);
 		}
+	}
+
+	public <E> List<E> shardingQuery(MappedStatement ms, Object parameter,
+			RowBounds rowBounds, ResultHandler resultHandler)
+			throws SQLException {
+		executor = createExecutor(ExecutorType.SIMPLE, ms.getConfiguration(),
+				this.getTransaction());
+		return this.executor.query(ms, parameter, rowBounds, resultHandler);
+
 	}
 
 	@Override
