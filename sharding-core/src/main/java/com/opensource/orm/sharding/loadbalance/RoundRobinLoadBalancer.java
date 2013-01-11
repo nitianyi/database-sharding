@@ -26,7 +26,7 @@ public class RoundRobinLoadBalancer extends ReadWriteLoadBalancer implements
 	@Override
 	<T extends DatabaseItem> DataSource doDispatch(List<T> databaseItems,
 			ShardingInfo shardInfo) {
-		String key = shardInfo.getShardTableName();
+		String key = shardInfo.getTargetTableName();
 		int count = incrementCounter(key);
 		//TODO with weight
 		DatabaseItem item = databaseItems.get(count % databaseItems.size());

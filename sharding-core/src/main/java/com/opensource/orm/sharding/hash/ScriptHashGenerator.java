@@ -17,17 +17,19 @@ import com.opensource.orm.sharding.config.TableConfig;
 public class ScriptHashGenerator implements HashGenerator {
 	final ScriptExecutor scriptExecutor = new JavascriptScriptExecutor();
 
-	public String generateTableName(String tableName, String[] hashColumns,
-			Object[] hashValues) {
+	public String generateTableName(ShardContext context) {
+		String tableName=context.tableName;
+		String[] hashColumns=context.columns;
+		Object[] hashValues=context.values;
 		ConfigurationManager configurationManager = DefaultConfigurationManager
 				.getInstance();
 		TableConfig tableConfig = configurationManager
 				.getTableConfig(tableName);
-		Map<String, Object> context = new HashMap<String, Object>();
+		Map<String, Object> contextMap = new HashMap<String, Object>();
 		for (int i = 0; i < hashColumns.length; i++) {
-			context.put(hashColumns[i], hashValues[i]);
+			contextMap.put(hashColumns[i], hashValues[i]);
 		}
-		Object value = scriptExecutor.execute(tableConfig.getScript(), context);
+		Object value = scriptExecutor.execute(tableConfig.getScript(), contextMap);
 		if (value != null) {
 			return value.toString();
 		}

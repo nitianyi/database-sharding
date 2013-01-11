@@ -14,11 +14,11 @@ import com.opensource.orm.sharding.utils.HashUtils;
  */
 public class DefaultHashGenerator implements HashGenerator {
 
-	/* (non-Javadoc)
-	 * @see com.jd.orm.sharding.hash.HashGenerator#generateTableName(java.lang.String, java.lang.String[], java.lang.Object[])
-	 */
-	public String generateTableName(String tableName, String[] hashColumns,
-			Object[] hashValues) {
+ 
+	public String generateTableName(ShardContext context) {
+		String tableName=context.tableName;
+		String[] hashColumns=context.columns;
+		Object[] hashValues=context.values;
 		ConfigurationManager configurationManager=DefaultConfigurationManager.getInstance();
 		TableConfig tableConfig=configurationManager.getTableConfig(tableName);
 		String []tables=tableConfig.getTables();

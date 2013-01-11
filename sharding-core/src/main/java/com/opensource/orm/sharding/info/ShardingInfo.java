@@ -21,9 +21,9 @@ public interface ShardingInfo {
 
 	String getTableName();
 
-	String getShardTableName();
+	String getTargetTableName();
 
-	void setShardTableName(String name);
+	void setTargetTableName(String name);
 
 	String[] getConfigHashColumns();
 
